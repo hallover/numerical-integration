@@ -1,0 +1,7 @@
+setup.cfg
+Integration/integration_class.py
+Integration.egg-info/PKG-INFO
+Integration.egg-info/SOURCES.txt
+Integration.egg-info/dependency_links.txt
+Integration.egg-info/requires.txt
+Integration.egg-info/top_level.txt

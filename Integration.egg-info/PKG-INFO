@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: Integration
+Version: 0.0.1
+Summary: Numerical integration and convergence.
+Home-page: https://github.com/hallover/numerical-integration
+Author: Hayden Oliver
+Author-email: haydenoliver@physics.byu.edu
+License: MIT
+Description: # numerical-integration
+        Contains a class with each necessary method to numerically integrate a given function.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Natural Language :: English
+Classifier: Operating System :: Ubuntu
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
