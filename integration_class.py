@@ -1,6 +1,8 @@
 import numpy as np
 import random
-from os import system as clear
+from matplotlib import pyplot as plt
+from os import system
+import time
 
 
 class Integration:
@@ -22,18 +24,26 @@ class Integration:
 
     """
     nSamples = 1000
-    domain = [0., 1.]
+    domain = [0., 1.9]
     dx = (domain[1] - domain[0]) / nSamples
     offset = 0.0
     method_choice = 0
+    which_rectangle = "z"
     sample_points = []
     calculated_points = []
+    error = 1
+    solution = 0
+    n = []
+    er = []
 
     def __init__(self):
         return
 
     def Equation(self, x):
-        return np.exp(np.cos(2 * np.pi * x))
+        """If you change this function, you must define your own analytic answer
+            in Integration.ConvergencePlot(), otherwise you'll end up with an infinite
+            loop, and it will suck."""
+        return np.exp(np.cos(np.pi * 2 * x))
 
     def ChooseIntegration(self):
         """
@@ -41,46 +51,56 @@ class Integration:
             integration.
             method_choice (int) - variable returned at end of method. Valid
             returned values are 2-trapezoid,
-            3-simpson, 11-left rectangle, 12-right rectangle, 13-midpoint,
-            14 - arbitrary
+            3-simpson, a-left rectangle, b-right rectangle, c-midpoint,
+            d - arbitrary
         """
         self.method_choice = int(
             input(
                 "Which method?   (choose a number): \n1. Rectangle, \n2. Trapezoid, \n3. Simpson\n"
             ))
         if self.method_choice == 1:
-            which_rectangle = int(
-                input(
-                    "Which rectangle method? \n1. Left Endpoint, \n2. Right Endpoint, \n3. Midpoint, \n4. Arbitrary\n"
-                ))
-            if which_rectangle == 1:
-                self.method_choice = 11
-            elif which_rectangle == 2:
-                self.method_choice = 12
-            elif which_rectangle == 3:
-                self.method_choice = 13
+            self.which_rectangle = input(
+                "Which rectangle method? \na - Left Endpoint, \nb - Right Endpoint, \nc - Midpoint, \nd - Arbitrary\n"
+            )
+            if self.which_rectangle == "a":
+                return
+            elif self.which_rectangle == "b":
+                return
+            elif self.which_rectangle == "c":
+                return
             else:
-                self.method_choice = 14
+                self.which_rectangle = "d"
         #print(self.method_choice, " test 1")
-        return self.method_choice
+        #return self.method_choice
 
-    def DefineOffset(self, method_choice):
-        if self.method_choice > 10:
-            if method_choice == 11:  #left endpoint
+    def DefineOffset(self):
+        """This function defines the offset of the sample point used by the rectangle
+        method.
+            which_rectangle(str) - taken from Integration.ChooseIntegration()
+
+        """
+        if self.method_choice == 1:
+            if self.which_rectangle == "a":  #left endpoint
                 self.offset = 0
-            elif self.method_choice == 12:  #right endpoint
+            elif self.which_rectangle == "b":  #right endpoint
                 self.offset = self.dx
-            elif self.method_choice == 13:  #midpoint
+            elif self.which_rectangle == "c":  #midpoint
                 self.offset = .5 * self.dx
-            self.method_choice = 1
+            elif self.which_rectangle == "d":
+                self.offset = random.random() * self.dx
+
         else:
             self.offset = 0
 
-    def ConvergenceCriteria():
-        return
+    #    print("Offset", self.offset)
 
     def SamplePointGeneration(self):
-        if self.method_choice == 1:
+        """This method will generate the x coordinates for each sampling point to be used
+        in the integration.
+
+            sample_points (list) - used to store each x to be mapped in Integration.IntegrationMethod()
+        """
+        if self.method_choice == 1 or self.method_choice == "a" or self.method_choice == "b" or self.method_choice == "c":
             self.sample_points = [
                 self.domain[0] + self.offset + self.dx * i
                 for i in range(self.nSamples)
@@ -90,23 +110,19 @@ class Integration:
                 self.domain[0] + self.offset + self.dx * i
                 for i in range(self.nSamples + 1)
             ]
-
-        return self.sample_points
-
-    def ConvergencePlot():
-        return
+        #    print("---------SAMPLES--------\n", self.sample_points)
 
     def IntegrationMethod(self):
-        solution = 0
 
         if self.method_choice == 1:  #rectangle
             y = map(self.Equation, self.sample_points)
-            solution = self.dx * sum(y)
+            self.solution = self.dx * sum(y)
 
         elif self.method_choice == 2:  #Trapezoid
 
             y = list(map(self.Equation, self.sample_points))
-            solution = self.dx * (sum(y) - (y[0] + y[-1]) / 2)
+            self.solution = self.dx * (sum(y) - (y[0] + y[-1]) / 2)
+
         elif self.method_choice == 3:  #Simpson
             """To calculate Simpson's method, we're going to use the weighted
             averages of the trapezoidal and the midpoint rules S = (2M +T)/3.
@@ -121,19 +137,69 @@ class Integration:
             self.offset = 0
             T_samples = self.SamplePointGeneration()
             T = self.IntegrationMethod()
+            #    print("midpoint", M, " Trapezoid", T)
+            self.solution = (2 * M + T) / 3
+            self.method_choice = 3
+        return self.solution
 
-            solution = (2 * M + T) / 3
+    def ConvergencePlot(self):
 
-        return solution
+        self.nSamples = 2
+        """This is the error function. To test for convergence, choose an epsilon for converge_to, and add the analytic answer
+        to 16 digits or so.
+
+        """
+        converge_to = 1e-9
+
+        #for i in range(0, 10):
+        #    if self.error < converge_to:
+        #        break
+        #    else:
+        while self.error > converge_to:
+            t1 = time.time()
+            self.n.append(self.nSamples)
+            self.dx = (self.domain[1] - self.domain[0]) / self.nSamples
+            self.SamplePointGeneration()
+            A = self.IntegrationMethod()
+            self.nSamples = self.nSamples * 2
+            #    print(A)
+            """ Here you must give the analytic answer to the function you are integrating if you want to have a
+            """
+            self.error = abs(A - 2.27687334373138)
+            self.er.append(self.error)
+            print("Error: ", self.error, "... N = ", self.nSamples)
+            t2 = time.time()
+            print("\t", t2 - t1, " seconds")
+
+    def Error_Plots(self):
+
+        print(len(self.n), len(self.er))
+        plt.plot(self.n, self.er)
+        plt.scatter(self.n, self.er, label="Your function")
+        plt.legend()
+        plt.xscale('log')
+        plt.xlabel("Number of Sampling points")
+        plt.yscale('log')
+        plt.ylabel('Error')
+
+        plt.show()
 
 
 """Main Program:
 define X as instance of class integration. Take console input, calculate with
 given points."""
+t0 = time.time()
 X = Integration()
 X.ChooseIntegration()
-X.DefineOffset(X.method_choice)
+X.DefineOffset()
 X.SamplePointGeneration()
 S = X.IntegrationMethod()
 #clear('clear')
 print("The solution is", S, '\n\n\n')
+X.ConvergencePlot()
+
+tf = time.time()
+tt = tf - t0
+print(tt, "seconds")
+
+X.Error_Plots()
