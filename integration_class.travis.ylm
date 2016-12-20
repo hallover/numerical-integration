@@ -1,0 +1,12 @@
+language: python
+cache: pip
+python:
+  - "3.5"
+# command to install dependencies
+install:
+    - pip3 install --upgrade -r requirements.txt
+    - pip3 install --upgrade .
+    - pip3 install --upgrade tox-travis
+# command to run tests
+script: tox
+after_success: coveralls
